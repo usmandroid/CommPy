@@ -23,6 +23,7 @@ Modulation Demodulation (:mod:`commpy.modulation`)
 from bisect import insort
 
 import matplotlib.pyplot as plt
+import numpy as np
 from numpy import arange, array, zeros, pi, sqrt, log2, argmin, \
     hstack, repeat, tile, dot, shape, concatenate, exp, \
     log, vectorize, empty, eye, kron, inf, full, abs, newaxis, minimum, clip, fromiter
@@ -140,12 +141,14 @@ class Modem:
 
         return demod_bits
 
+
     def plot_constellation(self):
         """ Plot the constellation """
+        plt.figure(figsize=(10, 10), dpi=120)
         plt.scatter(self.constellation.real, self.constellation.imag)
 
         for symb in self.constellation:
-            plt.text(symb.real + .2, symb.imag, self.demodulate(symb, 'hard'))
+            plt.text(symb.real + .1, symb.imag, str(self.demodulate(symb, 'hard')[:]))
 
         plt.title('Constellation')
         plt.grid()
@@ -206,8 +209,14 @@ class PSKModem(Modem):
         num_bits_symbol = log2(m)
         if num_bits_symbol != int(num_bits_symbol):
             raise ValueError('Constellation length must be a power of 2.')
-
-        super().__init__(exp(1j * arange(0, 2 * pi, 2 * pi / m)))
+        if  m == 2:
+            offset = pi
+            super().__init__(np.round(exp(1j * arange(0 + offset, 2 * pi + offset, 2 * pi / m))))
+        # elif m == 4:
+        #     offset = pi*3/4
+        #     exp(1j * arange(0 + offset, 2 * pi + offset, 2 * pi / m))
+        else:
+            super().__init__(exp(1j * arange(0, 2 * pi, 2 * pi / m)))
 
 
 class QAMModem(Modem):
